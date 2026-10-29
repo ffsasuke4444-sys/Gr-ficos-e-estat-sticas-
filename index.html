@@ -1,7 +1,39 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+
+<style>
+  /* Fundo animado de gráficos e estatísticas */
+  #fundo-graficos {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
+  }
+
+  body {
+    background-color: #07111f;
+  }
+
+  /* Mantém o conteúdo do site à frente do fundo */
+  body > *:not(#fundo-graficos) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Respeita quem prefere menos animações */
+  @media (prefers-reduced-motion: reduce) {
+    #fundo-graficos {
+      opacity: 0.35;
+    }
+  }
+</style>
+</head>
+
+  <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quiz - Gráficos e Estatísticas</title>
@@ -10,6 +42,8 @@
 * { box-sizing: border-box; }
 
 body {
+<canvas id="fundo-graficos" aria-hidden="true"></canvas>
+
   margin: 0;
   padding: 20px;
   font-family: Arial, sans-serif;
@@ -157,6 +191,145 @@ button:disabled {
 }
 </style>
 </head>
+
+<script>
+(() => {
+  const canvas = document.getElementById("fundo-graficos");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const reduzirMovimento = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  let largura = 0;
+  let altura = 0;
+  let pontos = [];
+  let barras = [];
+  let frame = 0;
+  let animacao;
+
+  function redimensionar() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    largura = window.innerWidth;
+    altura = window.innerHeight;
+
+    canvas.width = Math.round(largura * dpr);
+    canvas.height = Math.round(altura * dpr);
+    canvas.style.width = largura + "px";
+    canvas.style.height = altura + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    pontos = Array.from({ length: 7 }, (_, i) => ({
+      x: (largura / 6) * i,
+      fase: i * 0.9
+    }));
+
+    const quantidade = Math.ceil(largura / 42);
+
+    barras = Array.from({ length: quantidade }, (_, i) => ({
+      x: i * 42 + 8,
+      fase: i * 0.65,
+      altura: 25 + Math.random() * 100
+    }));
+  }
+
+  function desenhar() {
+    ctx.clearRect(0, 0, largura, altura);
+
+    // Grade sutil
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.07)";
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x < largura; x += 48) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, altura);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y < altura; y += 48) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(largura, y);
+      ctx.stroke();
+    }
+
+    // Barras estatísticas na parte inferior
+    const base = altura * 0.92;
+
+    barras.forEach((barra, i) => {
+      const movimento = reduzirMovimento
+        ? 0
+        : Math.sin(frame * 0.025 + barra.fase) * 18;
+
+      const h = Math.max(8, barra.altura + movimento);
+
+      ctx.fillStyle = i % 2 === 0
+        ? "rgba(34, 211, 238, 0.17)"
+        : "rgba(59, 130, 246, 0.18)";
+
+      ctx.fillRect(barra.x, base - h, 16, h);
+    });
+
+    // Linha de gráfico com pontos luminosos
+    ctx.beginPath();
+
+    pontos.forEach((ponto, i) => {
+      const onda = reduzirMovimento
+        ? 0
+        : Math.sin(frame * 0.018 + ponto.fase) * 34;
+
+      const x = ponto.x;
+      const y = altura * 0.48 + onda;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.strokeStyle = "rgba(34, 211, 238, 0.65)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Pontos do gráfico
+    pontos.forEach((ponto) => {
+      const onda = reduzirMovimento
+        ? 0
+        : Math.sin(frame * 0.018 + ponto.fase) * 34;
+
+      const y = altura * 0.48 + onda;
+
+      ctx.beginPath();
+      ctx.arc(ponto.x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#67e8f9";
+      ctx.fill();
+    });
+
+    if (!reduzirMovimento) frame++;
+    animacao = requestAnimationFrame(desenhar);
+  }
+
+  window.addEventListener("resize", redimensionar);
+
+  redimensionar();
+  desenhar();
+
+  // Evita deixar a animação rodando numa aba oculta
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animacao);
+    } else {
+      cancelAnimationFrame(animacao);
+      desenhar();
+    }
+  });
+})();
+</script>
+</body>
 
 <body>
 <div class="container">
