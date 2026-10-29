@@ -1,70 +1,44 @@
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Questionário de Estatística</title>
-<style>
-body{font-family:Arial,sans-serif;background:#f1f5f9;color:#172033;margin:0;padding:16px}
-main{max-width:650px;margin:auto}
-section{background:white;padding:20px;border-radius:16px;margin-bottom:16px}
-h1{font-size:25px}
-p{line-height:1.5}
-.question{border-top:1px solid #ddd;padding-top:16px;margin-top:16px}
-label{display:block;padding:12px;border:1px solid #ddd;border-radius:10px;margin:8px 0;cursor:pointer}
-label:has(input:checked){background:#eff6ff;border-color:#3b82f6}
-input{margin-right:8px}
-button{width:100%;padding:14px;border:0;border-radius:10px;background:#172033;color:white;font-size:16px;font-weight:bold;cursor:pointer}
-#result{font-size:20px;font-weight:bold}
-.feedback{font-size:14px;line-height:1.5;background:#f1f5f9;padding:12px;border-radius:10px}
-</style>
-</head>
-<body>
-<main>
-<section>
-<h1>📊 Gráficos, Dados e Estatísticas</h1>
-<p>Responda às seis questões e confira sua nota no final.</p>
-<div id="quiz"></div>
-<button onclick="corrigir()">Finalizar e corrigir</button>
-<div id="result"></div>
-</section>
-</main>
-<script>
-const questoes=[
-{n:"1. O que são dados?",nivel:"Fácil",op:["Conclusões prontas","Registros brutos, como números e observações","Apenas gráficos"],c:1,e:"Dados são registros brutos coletados sobre uma realidade."},
-{n:"2. Qual gráfico compara categorias, como produtos ou turmas?",nivel:"Fácil",op:["Linhas","Setores","Barras"],c:2,e:"O gráfico de barras compara categorias e quantidades."},
-{n:"3. Qual gráfico acompanha mudanças ao longo dos meses ou anos?",nivel:"Médio",op:["Linhas","Setores","Barras em todos os casos"],c:0,e:"O gráfico de linhas mostra mudanças e tendências ao longo do tempo."},
-{n:"4. O que conferir antes de interpretar um gráfico?",nivel:"Médio",op:["Só a altura das barras","Título, eixos, escala, unidade, legenda, fonte e data","Só as cores"],c:1,e:"Esses elementos ajudam a interpretar os dados corretamente."},
-{n:"5. Um gráfico mostra um valor subindo de 92 para 98, mas o eixo começa em 90. Qual o risco?",nivel:"Difícil",op:["A mudança parecer maior do que realmente é","Os valores desaparecerem","O gráfico virar um gráfico de linhas"],c:0,e:"Uma escala truncada pode exagerar visualmente a variação."},
-{n:"6. Como tomar uma decisão após perceber uma mudança nos dados?",nivel:"Difícil",op:["Escolher uma causa sem investigar","Ignorar o contexto","Investigar causas e usar evidências verificáveis"],c:2,e:"É importante analisar o que mudou, investigar por que e decidir com evidências."}
+const questoes = [
+  {
+    n: "Uma pesquisa registrou a quantidade de alunos que prefere cada esporte. Qual gráfico facilita a comparação entre os esportes?",
+    nivel: "Fácil",
+    op: ["Gráfico de linhas", "Gráfico de barras", "Gráfico de setores"],
+    c: 1,
+    e: "O gráfico de barras facilita a comparação entre diferentes categorias."
+  },
+  {
+    n: "Um gráfico mostra a temperatura de uma cidade durante sete dias. Qual tipo é mais indicado para observar as mudanças ao longo da semana?",
+    nivel: "Fácil",
+    op: ["Gráfico de setores", "Gráfico de barras", "Gráfico de linhas"],
+    c: 2,
+    e: "O gráfico de linhas ajuda a acompanhar as mudanças de uma variável ao longo do tempo."
+  },
+  {
+    n: "Em uma pesquisa, 40% dos alunos preferem futebol, 35% vôlei e 25% basquete. O que esses números representam juntos?",
+    nivel: "Fácil",
+    op: ["Mais de 100% dos alunos", "O total de 100% dos participantes", "Apenas metade dos participantes"],
+    c: 1,
+    e: "As porcentagens somam 100%, representando o total dos participantes."
+  },
+  {
+    n: "Um gráfico tem o eixo vertical começando em 95, e não em zero. Qual cuidado devemos ter ao interpretá-lo?",
+    nivel: "Fácil",
+    op: ["A diferença entre os valores pode parecer maior do que realmente é", "Os dados são necessariamente falsos", "O gráfico não pode apresentar números"],
+    c: 0,
+    e: "Uma escala que não começa em zero pode exagerar visualmente pequenas diferenças."
+  },
+  {
+    n: "Dois gráficos apresentam os mesmos dados, mas parecem mostrar resultados diferentes. O que devemos analisar?",
+    nivel: "Fácil",
+    op: ["Apenas as cores utilizadas", "Somente o tamanho das imagens", "As escalas, os eixos e as informações apresentadas"],
+    c: 2,
+    e: "A escala e os eixos podem mudar a forma como os dados são percebidos."
+  },
+  {
+    n: "Uma notícia mostra um gráfico sobre o aumento das vendas, mas não informa a fonte nem a data. Qual é a melhor atitude?",
+    nivel: "Fácil",
+    op: ["Aceitar os dados porque estão em um gráfico", "Procurar a fonte e o contexto antes de tirar conclusões", "Concluir que as vendas aumentaram em todos os lugares"],
+    c: 1,
+    e: "Verificar a fonte e a data ajuda a avaliar a confiabilidade e o contexto das informações."
+  }
 ];
-const letras=["A","B","C"];
-const quiz=document.getElementById("quiz");
-questoes.forEach((q,i)=>{
-let d=document.createElement("div");d.className="question";
-d.innerHTML="<b>"+q.nivel+"</b><h3>"+q.n+"</h3>";
-q.op.forEach((o,j)=>{
-d.innerHTML+='<label><input type="radio" name="q'+i+'" value="'+j+'">'+letras[j]+") "+o+"</label>";
-});
-quiz.appendChild(d);
-});
-function corrigir(){
-let pontos=0,respondidas=0;
-document.querySelectorAll(".feedback").forEach(e=>e.remove());
-questoes.forEach((q,i)=>{
-let marcado=document.querySelector('input[name="q'+i+'"]:checked');
-let d=quiz.children[i];
-let f=document.createElement("div");f.className="feedback";
-if(marcado){respondidas++;if(Number(marcado.value)===q.c)pontos++;
-f.innerHTML="<b>"+(Number(marcado.value)===q.c?"Correto!":"Incorreto.")+"</b> Resposta: "+letras[q.c]+". "+q.e;
-}else{f.innerHTML="<b>Não respondida.</b> Resposta: "+letras[q.c]+". "+q.e;}
-d.appendChild(f);
-});
-document.getElementById("result").innerHTML=
-"Nota: "+pontos+"/6<br><small>"+respondidas+" de 6 questões respondidas.</small>";
-document.getElementById("result").scrollIntoView({behavior:"smooth"});
-}
-</script>
-</body>
-</html>
