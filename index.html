@@ -1,44 +1,504 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz - Gráficos e Estatísticas</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #10131c;
+  color: #f5f5f5;
+}
+
+.container {
+  max-width: 760px;
+  margin: auto;
+}
+
+h1, h2, h3 { text-align: center; }
+
+.subtitulo {
+  text-align: center;
+  color: #b8bfd1;
+  line-height: 1.5;
+}
+
+.questao, .painel {
+  background: #1c2231;
+  padding: 20px;
+  border: 1px solid #343d53;
+  border-radius: 14px;
+  margin: 20px 0;
+}
+
+.pergunta {
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.alternativa {
+  display: block;
+  background: #292f40;
+  padding: 13px;
+  border-radius: 9px;
+  margin-top: 10px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.alternativa:hover { background: #39435a; }
+
+.alternativa input { margin-right: 8px; }
+
+button {
+  width: 100%;
+  padding: 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #8b5cf6;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 12px 0;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.secundario { background: #343d53; }
+
+.oculto { display: none !important; }
+
+.pizza {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  margin: 22px auto;
+  background: conic-gradient(#22c55e 0% 0%, #ef4444 0% 100%);
+  position: relative;
+}
+
+.pizza::after {
+  content: "";
+  position: absolute;
+  inset: 42px;
+  background: #1c2231;
+  border-radius: 50%;
+}
+
+.legenda {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 18px 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cor {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+}
+
+.verde { background: #22c55e; }
+.vermelho { background: #ef4444; }
+
+.detalhe {
+  padding: 13px;
+  border-radius: 9px;
+  background: #292f40;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+
+.ok { color: #4ade80; }
+.erro { color: #f87171; }
+
+.estatistica {
+  background: #292f40;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.numero {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.aviso {
+  color: #b8bfd1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media(max-width: 480px) {
+  body { padding: 12px; }
+  .pizza { width: 180px; height: 180px; }
+  .pizza::after { inset: 36px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <h1>📊 Gráficos e Estatísticas</h1>
+  <p class="subtitulo">
+    Responda às 6 perguntas e descubra sua pontuação!
+  </p>
+
+  <form id="quiz"></form>
+
+  <button id="corrigir" type="button">Corrigir respostas</button>
+
+  <section id="resultado" class="painel oculto">
+    <h2>🏆 Seu resultado</h2>
+    <h3 id="pontuacao"></h3>
+    <p id="mensagem" class="subtitulo"></p>
+
+    <h3>Seu gráfico de acertos e erros</h3>
+    <div id="pizzaIndividual" class="pizza" role="img"
+      aria-label="Gráfico individual de acertos e erros"></div>
+
+    <div class="legenda">
+      <div class="item">
+        <span class="cor verde"></span>
+        <span id="acertosLegenda"></span>
+      </div>
+      <div class="item">
+        <span class="cor vermelho"></span>
+        <span id="errosLegenda"></span>
+      </div>
+    </div>
+
+    <div id="detalhes"></div>
+    <p id="statusSalvamento" class="aviso"></p>
+
+    <button id="refazer" type="button" class="secundario">
+      Fazer novamente
+    </button>
+  </section>
+
+  <section class="painel">
+    <h2>📈 Estatísticas gerais</h2>
+    <p class="subtitulo">
+      Resultados de todas as tentativas registradas no banco de dados.
+    </p>
+
+    <div class="estatistica">
+      Tentativas registradas
+      <div id="totalTentativas" class="numero">—</div>
+    </div>
+
+    <div class="estatistica">
+      Média de acertos
+      <div id="mediaAcertos" class="numero">—</div>
+    </div>
+
+    <h3>Acertos e erros de todas as tentativas</h3>
+    <div id="pizzaGeral" class="pizza" role="img"
+      aria-label="Gráfico geral de acertos e erros"></div>
+
+    <div class="legenda">
+      <div class="item">
+        <span class="cor verde"></span>
+        <span id="geralAcertos">Acertos: —</span>
+      </div>
+      <div class="item">
+        <span class="cor vermelho"></span>
+        <span id="geralErros">Erros: —</span>
+      </div>
+    </div>
+
+    <p id="statusGeral" class="aviso" aria-live="polite">
+      Carregando estatísticas...
+    </p>
+
+    <button id="atualizar" type="button" class="secundario">
+      Atualizar estatísticas
+    </button>
+  </section>
+</div>
+
+<!-- Biblioteca oficial do Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// 1. COLOQUE A URL E A CHAVE PÚBLICA DO SEU PROJETO AQUI.
+const SUPABASE_URL = "https://buqgbmspmpvtqgraydzl.supabase.co";
+const SUPABASE_KEY = "sb_publishable_OQcconCtZxw0DT_-s0wFOw_t3N0tHMl";
+
+let banco = null;
+
+if (
+  window.supabase &&
+  SUPABASE_URL.startsWith("https://") &&
+  !SUPABASE_URL.includes("COLE_A_URL") &&
+  SUPABASE_KEY !== "COLE_SUA_CHAVE_PUBLICA"
+) {
+  banco = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+}
+
+// 2. PERGUNTAS DO QUIZ
 const questoes = [
   {
     n: "Uma pesquisa registrou a quantidade de alunos que prefere cada esporte. Qual gráfico facilita a comparação entre os esportes?",
-    nivel: "Fácil",
     op: ["Gráfico de linhas", "Gráfico de barras", "Gráfico de setores"],
     c: 1,
     e: "O gráfico de barras facilita a comparação entre diferentes categorias."
   },
   {
     n: "Um gráfico mostra a temperatura de uma cidade durante sete dias. Qual tipo é mais indicado para observar as mudanças ao longo da semana?",
-    nivel: "Fácil",
     op: ["Gráfico de setores", "Gráfico de barras", "Gráfico de linhas"],
     c: 2,
-    e: "O gráfico de linhas ajuda a acompanhar as mudanças de uma variável ao longo do tempo."
+    e: "O gráfico de linhas ajuda a acompanhar as mudanças ao longo do tempo."
   },
   {
     n: "Em uma pesquisa, 40% dos alunos preferem futebol, 35% vôlei e 25% basquete. O que esses números representam juntos?",
-    nivel: "Fácil",
     op: ["Mais de 100% dos alunos", "O total de 100% dos participantes", "Apenas metade dos participantes"],
     c: 1,
     e: "As porcentagens somam 100%, representando o total dos participantes."
   },
   {
     n: "Um gráfico tem o eixo vertical começando em 95, e não em zero. Qual cuidado devemos ter ao interpretá-lo?",
-    nivel: "Fácil",
     op: ["A diferença entre os valores pode parecer maior do que realmente é", "Os dados são necessariamente falsos", "O gráfico não pode apresentar números"],
     c: 0,
     e: "Uma escala que não começa em zero pode exagerar visualmente pequenas diferenças."
   },
   {
     n: "Dois gráficos apresentam os mesmos dados, mas parecem mostrar resultados diferentes. O que devemos analisar?",
-    nivel: "Fácil",
     op: ["Apenas as cores utilizadas", "Somente o tamanho das imagens", "As escalas, os eixos e as informações apresentadas"],
     c: 2,
     e: "A escala e os eixos podem mudar a forma como os dados são percebidos."
   },
   {
     n: "Uma notícia mostra um gráfico sobre o aumento das vendas, mas não informa a fonte nem a data. Qual é a melhor atitude?",
-    nivel: "Fácil",
     op: ["Aceitar os dados porque estão em um gráfico", "Procurar a fonte e o contexto antes de tirar conclusões", "Concluir que as vendas aumentaram em todos os lugares"],
     c: 1,
-    e: "Verificar a fonte e a data ajuda a avaliar a confiabilidade e o contexto das informações."
+    e: "Verificar a fonte e a data ajuda a avaliar a confiabilidade das informações."
   }
 ];
+
+const formulario = document.getElementById("quiz");
+
+questoes.forEach((q, i) => {
+  const bloco = document.createElement("div");
+  bloco.className = "questao";
+
+  const pergunta = document.createElement("p");
+  pergunta.className = "pergunta";
+  pergunta.textContent = `${i + 1}. ${q.n}`;
+  bloco.appendChild(pergunta);
+
+  q.op.forEach((opcao, j) => {
+    const label = document.createElement("label");
+    label.className = "alternativa";
+
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = `pergunta${i}`;
+    radio.value = j;
+    radio.required = true;
+
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(opcao));
+    bloco.appendChild(label);
+  });
+
+  formulario.appendChild(bloco);
+});
+
+function desenharPizza(elemento, acertos, erros) {
+  const total = acertos + erros;
+  const porcentagem = total ? (acertos / total) * 100 : 0;
+
+  elemento.style.background = total
+    ? `conic-gradient(#22c55e 0% ${porcentagem}%, #ef4444 ${porcentagem}% 100%)`
+    : "#343d53";
+
+  elemento.setAttribute(
+    "aria-label",
+    total
+      ? `Acertos: ${porcentagem.toFixed(1)}%. Erros: ${(100 - porcentagem).toFixed(1)}%.`
+      : "Ainda não há resultados."
+  );
+}
+
+async function carregarEstatisticas() {
+  const status = document.getElementById("statusGeral");
+
+  if (!banco) {
+    status.textContent =
+      "Falta configurar a URL e a chave pública do Supabase neste código.";
+    return;
+  }
+
+  status.textContent = "Carregando resultados...";
+
+  const { data, error } = await banco
+    .from("resultados_quiz")
+    .select("acertos,total");
+
+  if (error) {
+    console.error(error);
+    status.textContent =
+      "Não foi possível carregar os resultados. Verifique a conexão e as permissões da tabela.";
+    return;
+  }
+
+  const tentativas = data.length;
+  const totalPerguntas = data.reduce((s, r) => s + r.total, 0);
+  const acertos = data.reduce((s, r) => s + r.acertos, 0);
+  const erros = totalPerguntas - acertos;
+  const media = totalPerguntas
+    ? (acertos / totalPerguntas) * 100
+    : 0;
+  const porcentagemAcertos = totalPerguntas
+    ? (acertos / totalPerguntas) * 100
+    : 0;
+  const porcentagemErros = 100 - porcentagemAcertos;
+
+  document.getElementById("totalTentativas").textContent = tentativas;
+  document.getElementById("mediaAcertos").textContent =
+    tentativas ? `${media.toFixed(1)}%` : "0%";
+
+  document.getElementById("geralAcertos").textContent =
+    `Acertos: ${porcentagemAcertos.toFixed(1)}% (${acertos})`;
+
+  document.getElementById("geralErros").textContent =
+    `Erros: ${porcentagemErros.toFixed(1)}% (${erros})`;
+
+  desenharPizza(document.getElementById("pizzaGeral"), acertos, erros);
+
+  status.textContent = tentativas
+    ? "Estatísticas atualizadas."
+    : "Ainda não há tentativas registradas.";
+}
+
+document.getElementById("corrigir").addEventListener("click", async () => {
+  if (!formulario.reportValidity()) {
+    formulario.querySelector(":invalid").focus();
+    return;
+  }
+
+  const botao = document.getElementById("corrigir");
+  botao.disabled = true;
+  botao.textContent = "Corrigindo...";
+
+  let acertos = 0;
+  let detalhes = "";
+
+  questoes.forEach((q, i) => {
+    const resposta = Number(
+      formulario.querySelector(`input[name="pergunta${i}"]:checked`).value
+    );
+
+    const certo = resposta === q.c;
+    if (certo) acertos++;
+
+    detalhes += `
+      <div class="detalhe">
+        <strong class="${certo ? "ok" : "erro"}">
+          ${i + 1}. ${certo ? "Acertou!" : "Errou."}
+        </strong>
+        ${certo ? "" : " Resposta correta: " + q.op[q.c] + "."}
+        <br>${q.e}
+      </div>
+    `;
+  });
+
+  const total = questoes.length;
+  const erros = total - acertos;
+  const pctAcertos = (acertos / total) * 100;
+  const pctErros = 100 - pctAcertos;
+
+  document.getElementById("pontuacao").textContent =
+    `${acertos} de ${total} acertos`;
+
+  document.getElementById("mensagem").textContent =
+    `Você acertou ${pctAcertos.toFixed(1)}% das perguntas!`;
+
+  desenharPizza(
+    document.getElementById("pizzaIndividual"),
+    acertos,
+    erros
+  );
+
+  document.getElementById("acertosLegenda").textContent =
+    `Acertos: ${pctAcertos.toFixed(1)}% (${acertos})`;
+
+  document.getElementById("errosLegenda").textContent =
+    `Erros: ${pctErros.toFixed(1)}% (${erros})`;
+
+  document.getElementById("detalhes").innerHTML = detalhes;
+  document.getElementById("resultado").classList.remove("oculto");
+  document.getElementById("statusSalvamento").textContent =
+    "Preparando o salvamento...";
+
+  document.getElementById("corrigir").classList.add("oculto");
+  document.getElementById("resultado").scrollIntoView({
+    behavior: "smooth"
+  });
+
+  // Salva a pontuação no banco de dados.
+  if (!banco) {
+    document.getElementById("statusSalvamento").textContent =
+      "Sua pontuação aparece acima, mas ainda não foi salva. Configure a conexão do Supabase.";
+  } else {
+    const { error } = await banco
+      .from("resultados_quiz")
+      .insert([{ acertos: acertos, total: total }]);
+
+    if (error) {
+      console.error(error);
+      document.getElementById("statusSalvamento").textContent =
+        "Não foi possível salvar a pontuação. Verifique a conexão e as permissões do banco.";
+    } else {
+      document.getElementById("statusSalvamento").textContent =
+        "Pontuação salva! Ela já pode entrar nas estatísticas gerais.";
+      await carregarEstatisticas();
+    }
+  }
+
+  botao.disabled = false;
+  botao.textContent = "Corrigir respostas";
+});
+
+document.getElementById("refazer").addEventListener("click", () => {
+  formulario.reset();
+  document.getElementById("resultado").classList.add("oculto");
+  document.getElementById("corrigir").classList.remove("oculto");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.getElementById("atualizar").addEventListener(
+  "click",
+  carregarEstatisticas
+);
+
+carregarEstatisticas();
+</script>
+</body>
+</html>
